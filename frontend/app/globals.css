@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #0b0d10;
+  color: #f4f7fb;
+}
+
+.fc {
+  --fc-border-color: #263241;
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: #11161d;
+  --fc-list-event-hover-bg-color: #161d26;
+  --fc-today-bg-color: rgba(244, 185, 66, 0.09);
+  color: #f4f7fb;
+}
+
+.fc .fc-button {
+  background: #161d26;
+  border-color: #263241;
+  border-radius: 6px;
+  color: #f4f7fb;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:hover {
+  background: #f4b942;
+  border-color: #f4b942;
+  color: #0b0d10;
+}
+
+.fc-event {
+  border: 0;
+  border-radius: 6px;
+  padding: 2px 4px;
+}

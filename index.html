@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Momentum — Productivity Intelligence</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['Space Grotesk', 'sans-serif'],
+        body: ['DM Sans', 'sans-serif'],
+      },
+      colors: {
+        surface: { 50: '#faf9f7', 100: '#f0eee9', 200: '#e0ddd5', 300: '#c9c4b8', 400: '#a9a291', 500: '#8f866f', 600: '#7a6f5a', 700: '#645a49', 800: '#534b3e', 900: '#1a1814', 950: '#0f0e0c' },
+        amber: { 400: '#f6ad3c', 500: '#e8991c', 600: '#cf7c0a' },
+        emerald: { 400: '#34d399', 500: '#10b981' },
+        rose: { 400: '#fb7185', 500: '#f43f5e' },
+        slate: { 700: '#334155', 800: '#1e293b', 900: '#0f172a' }
+      }
+    }
+  }
+}
+</script>
+<style>
+  :root {
+    --bg: #0f0e0c;
+    --fg: #f0eee9;
+    --muted: #8f866f;
+    --accent: #f6ad3c;
+    --accent-dim: #cf7c0a;
+    --card: #1a1814;
+    --card-hover: #23201a;
+    --border: #2e2a23;
+    --emerald: #34d399;
+    --rose: #fb7185;
+    --sky: #38bdf8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--fg); overflow-x: hidden; }
+  h1,h2,h3,h4,h5,h6 { font-family: 'Space Grotesk', sans-serif; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* Background atmosphere */
+  .bg-atmosphere {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 20% 20%, rgba(246,173,60,0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 500px 500px at 80% 80%, rgba(52,211,153,0.03) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 50% 50%, rgba(246,173,60,0.02) 0%, transparent 70%);
+  }
+
+  /* Noise overlay */
+  .noise-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 1; opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  /* Card styles */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card:hover { background: var(--card-hover); border-color: rgba(246,173,60,0.2); }
+
+  /* Accent glow */
+  .accent-glow {
+    box-shadow: 0 0 20px rgba(246,173,60,0.15), 0 0 60px rgba(246,173,60,0.05);
+  }
+
+  /* Button styles */
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+    color: #0f0e0c; font-weight: 600; border-radius: 10px;
+    padding: 10px 24px; border: none; cursor: pointer;
+    transition: all 0.3s; font-family: 'Space Grotesk', sans-serif;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(246,173,60,0.3); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-ghost {
+    background: transparent; color: var(--fg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 24px; cursor: pointer;
+    transition: all 0.3s; font-family: 'Space Grotesk', sans-serif;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Sidebar */
+  .sidebar-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+    border-radius: 10px; cursor: pointer; transition: all 0.2s;
+    color: var(--muted); font-weight: 500;
+  }
+  .sidebar-item:hover { background: rgba(246,173,60,0.08); color: var(--fg); }
+  .sidebar-item.active { background: rgba(246,173,60,0.12); color: var(--accent); }
+  .sidebar-item.active i { color: var(--accent); }
+
+  /* Task item */
+  .task-item {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+    border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); transition: all 0.25s; cursor: pointer;
+  }
+  .task-item:hover { border-color: rgba(246,173,60,0.3); transform: translateX(4px); }
+  .task-item.completed { opacity: 0.5; }
+  .task-item.completed .task-title { text-decoration: line-through; }
+
+  /* Checkbox */
+  .task-check {
+    width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+  }
+  .task-check:hover { border-color: var(--accent); }
+  .task-check.checked { background: var(--accent); border-color: var(--accent); }
+  .task-check.checked i { color: #0f0e0c; font-size: 11px; }
+
+  /* Priority badges */
+  .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-high { background: rgba(251,113,133,0.15); color: var(--rose); }
+  .badge-medium { background: rgba(246,173,60,0.15); color: var(--accent); }
+  .badge-low { background: rgba(52,211,153,0.15); color: var(--emerald); }
+
+  /* Category dots */
+  .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    padding: 14px 24px; border-radius: 10px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--fg); font-weight: 500;
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* WhatsApp chat */
+  .wa-bubble {
+    max-width: 75%; padding: 10px 14px; border-radius: 12px;
+    font-size: 14px; line-height: 1.5; position: relative;
+  }
+  .wa-bubble.sent { background: #054d3b; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .wa-bubble.received { background: #1f2c33; align-self: flex-start; border-bottom-left-radius: 4px; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 100; display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-content {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; max-width: 500px; width: 90%;
+    animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @keyframes modalIn { from { transform: scale(0.95) translateY(10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+
+  /* Input */
+  .input-field {
+    width: 100%; padding: 10px 14px; border-radius: 10px;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--fg); font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s; outline: none;
+  }
+  .input-field:focus { border-color: var(--accent); }
+  .input-field::placeholder { color: var(--muted); }
+
+  /* Select */
+  select.input-field { appearance: none; cursor: pointer; }
+
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  @keyframes rotateIn { from { transform: rotate(-180deg) scale(0); opacity: 0; } to { transform: rotate(0) scale(1); opacity: 1; } }
+
+  .animate-fade { animation: fadeIn 0.5s ease; }
+  .animate-slide { animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+  .animate-float { animation: float 4s ease-in-out infinite; }
+
+  /* Intelligence report */
+  .report-card {
+    background: linear-gradient(135deg, rgba(246,173,60,0.08), rgba(52,211,153,0.05));
+    border: 1px solid rgba(246,173,60,0.2);
+    border-radius: 16px; padding: 24px;
+  }
+
+  /* Progress ring */
+  .progress-ring circle {
+    transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+  }
+
+  /* Calendar day */
+  .cal-day {
+    aspect-ratio: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; border-radius: 10px;
+    cursor: pointer; transition: all 0.2s; font-size: 14px;
+    position: relative;
+  }
+  .cal-day:hover { background: rgba(246,173,60,0.1); }
+  .cal-day.today { background: rgba(246,173,60,0.15); color: var(--accent); font-weight: 700; }
+  .cal-day.has-tasks::after {
+    content: ''; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent); position: absolute; bottom: 6px;
+  }
+  .cal-day.other-month { opacity: 0.3; }
+
+  /* Stat card number animation */
+  .stat-number { font-variant-numeric: tabular-nums; }
+
+  /* Sidebar responsive */
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); position: fixed !important; z-index: 50; }
+    .sidebar.open { transform: translateX(0); }
+  }
+
+  /* Typing animation for WA */
+  .typing-dots span {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--muted); margin: 0 2px;
+    animation: pulse 1.4s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  /* Timeline */
+  .timeline-item::before {
+    content: ''; position: absolute; left: 19px; top: 40px;
+    width: 2px; height: calc(100% - 32px); background: var(--border);
+  }
+  .timeline-item:last-child::before { display: none; }
+</style>
+</head>
+<body>
+
+<!-- Background atmosphere -->
+<div class="bg-atmosphere"></div>
+<div class="noise-overlay"></div>
+
+<!-- Toast notification -->
+<div id="toast" class="toast">
+  <i class="fa-solid fa-check-circle" style="color: var(--emerald)"></i>
+  <span id="toast-msg">Action completed</span>
+</div>
+
+<!-- Add Task Modal -->
+<div id="task-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="text-xl font-bold font-display" id="modal-title">New Task</h3>
+      <button onclick="closeModal()" class="text-[var(--muted)] hover:text-[var(--fg)] transition-colors text-xl">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form id="task-form" onsubmit="saveTask(event)">
+      <input type="hidden" id="task-id">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-[var(--muted)] mb-1">Title</label>
+          <input type="text" id="task-title" class="input-field" placeholder="What needs to be done?" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--muted)] mb-1">Description</label>
+          <textarea id="task-desc" class="input-field" rows="2" placeholder="Optional details..."></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-[var(--muted)] mb-1">Category</label>
+            <select id="task-cat" class="input-field">
+              <option value="dsa">DSA Practice</option>
+              <option value="project">Project Work</option>
+              <option value="study">Study</option>
+              <option value="health">Health</option>
+              <option value="personal">Personal</option>
+              <option value="work">Work</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--muted)] mb-1">Priority</label>
+            <select id="task-priority" class="input-field">
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-[var(--muted)] mb-1">Due Date</label>
+            <input type="date" id="task-date" class="input-field">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--muted)] mb-1">Estimated Time</label>
+            <select id="task-time" class="input-field">
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
+              <option value="180">3+ hours</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button type="submit" class="btn-primary flex-1">Save Task</button>
+        <button type="button" onclick="closeModal()" class="btn-ghost">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Auth Screen -->
+<div id="auth-screen" class="min-h-screen flex items-center justify-center relative z-10 px-4">
+  <div class="text-center animate-slide">
+    <div class="mb-8">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--accent)] to-[var(--accent-dim)] mb-6 accent-glow">
+        <i class="fa-solid fa-bolt text-3xl text-[#0f0e0c]"></i>
+      </div>
+      <h1 class="text-5xl font-bold font-display mb-3">Momentum</h1>
+      <p class="text-[var(--muted)] text-lg">Your productivity intelligence engine</p>
+    </div>
+    <div class="card p-8 max-w-md mx-auto">
+      <div class="flex mb-6 bg-[var(--bg)] rounded-lg p-1">
+        <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all" style="background: var(--accent); color: #0f0e0c;">Sign In</button>
+        <button id="tab-signup" onclick="switchAuthTab('signup')" class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all text-[var(--muted)]">Sign Up</button>
+      </div>
+      <form onsubmit="handleAuth(event)">
+        <div class="space-y-4">
+          <div>
+            <input type="text" id="auth-name" class="input-field" placeholder="Your name" style="display:none">
+          </div>
+          <div>
+            <input type="email" id="auth-email" class="input-field" placeholder="Email address" required>
+          </div>
+          <div>
+            <input type="password" id="auth-pass" class="input-field" placeholder="Password" required>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary w-full mt-6" id="auth-btn">Sign In</button>
+      </form>
+      <p class="text-xs text-[var(--muted)] mt-4">Demo: enter any credentials to proceed</p>
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app" class="hidden min-h-screen relative z-10">
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="sidebar w-64 h-screen sticky top-0 border-r border-[var(--border)] bg-[var(--card)] p-4 flex flex-col transition-transform duration-300">
+      <div class="flex items-center gap-3 mb-8 px-2">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-dim)] flex items-center justify-center">
+          <i class="fa-solid fa-bolt text-[#0f0e0c] text-sm"></i>
+        </div>
+        <span class="font-display font-bold text-lg">Momentum</span>
+      </div>
+
+      <nav class="flex-1 space-y-1">
+        <div class="sidebar-item active" data-view="dashboard" onclick="switchView('dashboard')">
+          <i class="fa-solid fa-th-large w-5 text-center"></i><span>Dashboard</span>
+        </div>
+        <div class="sidebar-item" data-view="tasks" onclick="switchView('tasks')">
+          <i class="fa-solid fa-check-circle w-5 text-center"></i><span>Tasks</span>
+        </div>
+        <div class="sidebar-item" data-view="calendar" onclick="switchView('calendar')">
+          <i class="fa-solid fa-calendar-alt w-5 text-center"></i><span>Calendar</span>
+        </div>
+        <div class="sidebar-item" data-view="analytics" onclick="switchView('analytics')">
+          <i class="fa-solid fa-chart-line w-5 text-center"></i><span>Analytics</span>
+        </div>
+        <div class="sidebar-item" data-view="whatsapp" onclick="switchView('whatsapp')">
+          <i class="fa-brands fa-whatsapp w-5 text-center"></i><span>WhatsApp</span>
+        </div>
+        <div class="sidebar-item" data-view="intelligence" onclick="switchView('intelligence')">
+          <i class="fa-solid fa-brain w-5 text-center"></i><span>Intelligence</span>
+        </div>
+        <div class="sidebar-item" data-view="scheduler" onclick="switchView('scheduler')">
+          <i class="fa-solid fa-clock w-5 text-center"></i><span>Scheduler</span>
+        </div>
+      </nav>
+
+      <div class="border-t border-[var(--border)] pt-4 mt-4">
+        <div class="flex items-center gap-3 px-2">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--emerald)] flex items-center justify-center text-sm font-bold text-[#0f0e0c]" id="user-avatar">U</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-semibold truncate" id="user-name">User</div>
+            <div class="text-xs text-[var(--muted)]">Pro Plan</div>
+          </div>
+          <button onclick="logout()" class="text-[var(--muted)] hover:text-[var(--rose)] transition-colors" title="Logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-h-screen">
+      <!-- Top Bar -->
+      <header class="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg)]/80 backdrop-blur-xl px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button onclick="document.querySelector('.sidebar').classList.toggle('open')" class="md:hidden text-[var(--muted)]">
+            <i class="fa-solid fa-bars text-lg"></i>
+          </button>
+          <div>
+            <h2 class="font-display font-bold text-lg" id="view-title">Dashboard</h2>
+            <p class="text-xs text-[var(--muted)]" id="view-subtitle">Your productivity overview</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <input type="text" placeholder="Search tasks..." class="input-field pl-9 w-48 text-sm" id="search-input" oninput="handleSearch(this.value)">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)] text-xs"></i>
+          </div>
+          <button onclick="openNewTask()" class="btn-primary text-sm py-2 px-4 flex items-center gap-2">
+            <i class="fa-solid fa-plus text-xs"></i> New Task
+          </button>
+        </div>
+      </header>
+
+      <div class="p-6" id="content-area">
+        <!-- Content injected by JS -->
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+// ==================== DATA LAYER ====================
+const CATEGORIES = {
+  dsa: { label: 'DSA Practice', color: '#f6ad3c', icon: 'fa-code' },
+  project: { label: 'Project Work', color: '#38bdf8', icon: 'fa-laptop-code' },
+  study: { label: 'Study', color: '#a78bfa', icon: 'fa-book' },
+  health: { label: 'Health', color: '#34d399', icon: 'fa-heart-pulse' },
+  personal: { label: 'Personal', color: '#fb7185', icon: 'fa-user' },
+  work: { label: 'Work', color: '#f97316', icon: 'fa-briefcase' }
+};
+
+const SAMPLE_TASKS = [
+  { id: 't1', title: 'Complete Binary Search problems', desc: 'LeetCode #33, #34, #35', category: 'dsa', priority: 'high', date: todayStr(), time: 60, completed: false, createdAt: Date.now() - 86400000, completedAt: null, timeSpent: 45 },
+  { id: 't2', title: 'Review System Design notes', desc: 'Focus on distributed caching', category: 'study', priority: 'medium', date: todayStr(), time: 90, completed: true, createdAt: Date.now() - 172800000, completedAt: Date.now() - 3600000, timeSpent: 75 },
+  { id: 't3', title: 'Build API endpoints for tasks', desc: 'CRUD + filtering + pagination', category: 'project', priority: 'high', date: todayStr(), time: 120, completed: false, createdAt: Date.now() - 43200000, completedAt: null, timeSpent: 60 },
+  { id: 't4', title: 'Morning run — 5K', desc: 'Trail route at the park', category: 'health', priority: 'low', date: todayStr(), time: 30, completed: true, createdAt: Date.now() - 50000000, completedAt: Date.now() - 40000000, timeSpent: 28 },
+  { id: 't5', title: 'Write weekly reflection', desc: 'What went well, what to improve', category: 'personal', priority: 'medium', date: todayStr(), time: 30, completed: false, createdAt: Date.now() - 20000000, completedAt: null, timeSpent: 0 },
+  { id: 't6', title: 'Graph traversal practice', desc: 'BFS, DFS, Dijkstra on weighted graphs', category: 'dsa', priority: 'high', date: tomorrowStr(), time: 90, completed: false, createdAt: Date.now() - 10000000, completedAt: null, timeSpent: 30 },
+  { id: 't7', title: 'Deploy backend to Railway', desc: 'Docker + env vars + health check', category: 'project', priority: 'high', date: tomorrowStr(), time: 60, completed: false, createdAt: Date.now() - 5000000, completedAt: null, timeSpent: 0 },
+  { id: 't8', title: 'Read chapter 7 — Concurrency', desc: 'Operating Systems Concepts', category: 'study', priority: 'medium', date: tomorrowStr(), time: 60, completed: false, createdAt: Date.now(), completedAt: null, timeSpent: 0 },
+  { id: 't9', title: 'Yoga session', desc: 'Evening flexibility routine', category: 'health', priority: 'low', date: tomorrowStr(), time: 45, completed: false, createdAt: Date.now(), completedAt: null, timeSpent: 0 },
+  { id: 't10', title: 'Team standup prep', desc: 'Update sprint board before meeting', category: 'work', priority: 'medium', date: todayStr(), time: 15, completed: true, createdAt: Date.now() - 30000000, completedAt: Date.now() - 25000000, timeSpent: 12 },
+  { id: 't11', title: 'Dynamic Programming — Knapsack', desc: '0/1 and unbounded variants', category: 'dsa', priority: 'high', date: dayStr(2), time: 120, completed: false, createdAt: Date.now(), completedAt: null, timeSpent: 0 },
+  { id: 't12', title: 'Setup WebSocket layer', desc: 'Real-time sync for task updates', category: 'project', priority: 'medium', date: dayStr(2), time: 90, completed: false, createdAt: Date.now(), completedAt: null, timeSpent: 0 },
+  { id: 't13', title: 'Meditate — 15 min', desc: 'Guided breathing session', category: 'health', priority: 'low', date: dayStr(-1), time: 15, completed: true, createdAt: Date.now() - 100000000, completedAt: Date.now() - 90000000, timeSpent: 15 },
+  { id: 't14', title: 'Design database schema', desc: 'PostgreSQL tables for tasks, users, schedules', category: 'project', priority: 'high', date: dayStr(-1), time: 60, completed: true, createdAt: Date.now() - 120000000, completedAt: Date.now() - 110000000, timeSpent: 55 },
+  { id: 't15', title: 'Apply to 3 positions', desc: 'Tailor resume + cover letter', category: 'work', priority: 'high', date: dayStr(-1), time: 90, completed: true, createdAt: Date.now() - 130000000, completedAt: Date.now() - 100000000, timeSpent: 80 },
+];
+
+// Weekly productivity data for charts
+const WEEKLY_DATA = [
+  { day: 'Mon', completed: 5, total: 7, focus: 72 },
+  { day: 'Tue', completed: 8, total: 9, focus: 85 },
+  { day: 'Wed', completed: 4, total: 8, focus: 58 },
+  { day: 'Thu', completed: 6, total: 7, focus: 79 },
+  { day: 'Fri', completed: 7, total: 10, focus: 68 },
+  { day: 'Sat', completed: 3, total: 5, focus: 45 },
+  { day: 'Sun', completed: 6, total: 8, focus: 74 },
+];
+
+// ==================== STATE ====================
+let state = {
+  user: null,
+  tasks: [],
+  currentView: 'dashboard',
+  authTab: 'login',
+  calendarMonth: new Date().getMonth(),
+  calendarYear: new Date().getFullYear(),
+  selectedDate: todayStr(),
+  waMessages: [],
+  waInput: '',
+  timerActive: false,
+  timerTask: null,
+  timerStart: null,
+  timerInterval: null,
+};
+
+// ==================== HELPERS ====================
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function tomorrowStr() { const d = new Date(); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; }
+function dayStr(offset) { const d = new Date(); d.setDate(d.getDate() + offset); return d.toISOString().split('T')[0]; }
+function genId() { return 't' + Date.now() + Math.random().toString(36).slice(2, 6); }
+function formatTime(mins) { if (mins < 60) return `${mins}m`; const h = Math.floor(mins/60); const m = mins % 60; return m ? `${h}h ${m}m` : `${h}h`; }
+function getGreeting() { const h = new Date().getHours(); if (h < 12) return 'Good morning'; if (h < 17) return 'Good afternoon'; return 'Good evening'; }
+function formatDate(str) { if (!str) return ''; const d = new Date(str + 'T00:00:00'); return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); }
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  const icon = t.querySelector('i');
+  icon.className = type === 'success' ? 'fa-solid fa-check-circle' : type === 'error' ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-info-circle';
+  icon.style.color = type === 'success' ? 'var(--emerald)' : type === 'error' ? 'var(--rose)' : 'var(--accent)';
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function saveState() {
+  localStorage.setItem('momentum_tasks', JSON.stringify(state.tasks));
+  localStorage.setItem('momentum_user', JSON.stringify(state.user));
+}
+
+function loadState() {
+  try {
+    const t = localStorage.getItem('momentum_tasks');
+    const u = localStorage.getItem('momentum_user');
+    if (t) state.tasks = JSON.parse(t);
+    else state.tasks = [...SAMPLE_TASKS];
+    if (u) state.user = JSON.parse(u);
+  } catch { state.tasks = [...SAMPLE_TASKS]; }
+}
+
+// ==================== AUTH ====================
+function switchAuthTab(tab) {
+  state.authTab = tab;
+  const loginBtn = document.getElementById('tab-login');
+  const signupBtn = document.getElementById('tab-signup');
+  const nameField = document.getElementById('auth-name');
+  const authBtn = document.getElementById('auth-btn');
+  if (tab === 'login') {
+    loginBtn.style.background = 'var(--accent)'; loginBtn.style.color = '#0f0e0c';
+    signupBtn.style.background = 'transparent'; signupBtn.style.color = 'var(--muted)';
+    nameField.style.display = 'none'; authBtn.textContent = 'Sign In';
+  } else {
+    signupBtn.style.background = 'var(--accent)'; signupBtn.style.color = '#0f0e0c';
+    loginBtn.style.background = 'transparent'; loginBtn.style.color = 'var(--muted)';
+    nameField.style.display = 'block'; authBtn.textContent = 'Create Account';
+  }
+}
+
+function handleAuth(e) {
+  e.preventDefault();
+  const email = document.getElementById('auth-email').value;
+  const name = document.getElementById('auth-name').value || email.split('@')[0];
+  state.user = { name, email };
+  saveState();
+  enterApp();
+}
+
+function enterApp() {
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('user-name').textContent = state.user.name;
+  document.getElementById('user-avatar').textContent = state.user.name.charAt(0).toUpperCase();
+  renderView();
+}
+
+function logout() {
+  state.user = null;
+  localStorage.removeItem('momentum_user');
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('auth-screen').classList.remove('hidden');
+}
+
+// ==================== VIEW ROUTER ====================
+function switchView(view) {
+  state.currentView = view;
+  document.querySelectorAll('.sidebar-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+  const titles = {
+    dashboard: ['Dashboard', 'Your productivity overview'],
+    tasks: ['Tasks', 'Manage your tasks and to-dos'],
+    calendar: ['Calendar', 'Monthly view of your schedule'],
+    analytics: ['Analytics', 'Deep dive into your productivity'],
+    whatsapp: ['WhatsApp', 'Chat with your productivity assistant'],
+    intelligence: ['Intelligence', 'AI-powered daily insights'],
+    scheduler: ['Scheduler', 'Automated schedules and reminders'],
+  };
+  document.getElementById('view-title').textContent = titles[view]?.[0] || view;
+  document.getElementById('view-subtitle').textContent = titles[view]?.[1] || '';
+  renderView();
+}
+
+function renderView() {
+  const area = document.getElementById('content-area');
+  switch (state.currentView) {
+    case 'dashboard': area.innerHTML = renderDashboard(); initDashboardCharts(); break;
+    case 'tasks': area.innerHTML = renderTasks(); break;
+    case 'calendar': area.innerHTML = renderCalendar(); break;
+    case 'analytics': area.innerHTML = renderAnalytics(); initAnalyticsCharts(); break;
+    case 'whatsapp': area.innerHTML = renderWhatsApp(); initWhatsApp(); break;
+    case 'intelligence': area.innerHTML = renderIntelligence(); break;
+    case 'scheduler': area.innerHTML = renderScheduler(); break;
+  }
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  const today = state.tasks.filter(t => t.date === todayStr());
+  const completed = today.filter(t => t.completed).length;
+  const total = today.length;
+  const pct = total ? Math.round((completed / total) * 100) : 0;
+  const totalTime = today.reduce((s, t) => s + (t.timeSpent || 0), 0);
+  const focusScore = WEEKLY_DATA.reduce((s, d) => s + d.focus, 0) / WEEKLY_DATA.length;
+  const streak = calculateStreak();
+
+  const priorityTasks = state.tasks.filter(t => !t.completed && t.priority === 'high').slice(0, 4);
+
+  return `
+    <div class="animate-slide space-y-6">
+      <!-- Greeting -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold font-display">${getGreeting()}, ${state.user?.name || 'there'}</h1>
+          <p class="text-[var(--muted)] mt-1">${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} — You have ${total - completed} tasks remaining today</p>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-[var(--muted)]">Today's Progress</span>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(246,173,60,0.12)] flex items-center justify-center">
+              <i class="fa-solid fa-bullseye text-[var(--accent)]"></i>
+            </div>
+          </div>
+          <div class="stat-number text-3xl font-bold font-display">${completed}<span class="text-lg text-[var(--muted)]">/${total}</span></div>
+          <div class="mt-3 h-2 bg-[var(--bg)] rounded-full overflow-hidden">
+            <div class="h-full rounded-full transition-all duration-1000" style="width: ${pct}%; background: linear-gradient(90deg, var(--accent), var(--accent-dim))"></div>
+          </div>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-[var(--muted)]">Focus Score</span>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(52,211,153,0.12)] flex items-center justify-center">
+              <i class="fa-solid fa-brain text-[var(--emerald)]"></i>
+            </div>
+          </div>
+          <div class="stat-number text-3xl font-bold font-display" style="color: var(--emerald)">${Math.round(focusScore)}<span class="text-lg text-[var(--muted)]">%</span></div>
+          <p class="text-xs text-[var(--muted)] mt-1"><i class="fa-solid fa-arrow-up text-[var(--emerald)]"></i> 11% from last week</p>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-[var(--muted)]">Time Tracked</span>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(56,189,248,0.12)] flex items-center justify-center">
+              <i class="fa-solid fa-clock text-[var(--sky)]"></i>
+            </div>
+          </div>
+          <div class="stat-number text-3xl font-bold font-display" style="color: var(--sky)">${formatTime(totalTime)}</div>
+          <p class="text-xs text-[var(--muted)] mt-1">Today's active time</p>
+        </div>
+
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-[var(--muted)]">Current Streak</span>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(249,115,22,0.12)] flex items-center justify-center">
+              <i class="fa-solid fa-fire text-[#f97316]"></i>
+            </div>
+          </div>
+          <div class="stat-number text-3xl font-bold font-display" style="color: #f97316">${streak}<span class="text-lg text-[var(--muted)]"> days</span></div>
+          <p class="text-xs text-[var(--muted)] mt-1">Keep it going!</p>
+        </div>
+      </div>
+
+      <!-- Two Column -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Today's Tasks -->
+        <div class="lg:col-span-2 card p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-display font-bold text-lg">Today's Tasks</h3>
+            <button onclick="openNewTask()" class="text-sm text-[var(--accent)] hover:underline font-medium">+ Add</button>
+          </div>
+          <div class="space-y-2">
+            ${today.length ? today.map(t => taskItemHTML(t)).join('') : '<p class="text-[var(--muted)] text-sm py-4 text-center">No tasks for today. Add one to get started!</p>'}
+          </div>
+        </div>
+
+        <!-- Priority Focus -->
+        <div class="card p-5">
+          <h3 class="font-display font-bold text-lg mb-4">High Priority</h3>
+          <div class="space-y-3">
+            ${priorityTasks.length ? priorityTasks.map(t => `
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg)] border border-[var(--border)]">
+                <div class="cat-dot" style="background: ${CATEGORIES[t.category]?.color || '#888'}"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium truncate">${t.title}</div>
+                  <div class="text-xs text-[var(--muted)]">${CATEGORIES[t.category]?.label || t.category}</div>
+                </div>
+                <span class="badge badge-high">High</span>
+              </div>
+            `).join('') : '<p class="text-[var(--muted)] text-sm text-center py-4">No high priority tasks</p>'}
+          </div>
+
+          <!-- Mini weekly chart -->
+          <div class="mt-6">
+            <h4 class="text-sm font-semibold text-[var(--muted)] mb-3">This Week</h4>
+            <canvas id="dash-weekly-chart" height="120"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Breakdown -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        ${Object.entries(CATEGORIES).map(([key, cat]) => {
+          const count = state.tasks.filter(t => t.category === key && !t.completed).length;
+          return `
+            <div class="card p-4 text-center cursor-pointer" onclick="switchView('tasks'); filterByCategory('${key}')">
+              <div class="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center" style="background: ${cat.color}22">
+                <i class="fa-solid ${cat.icon}" style="color: ${cat.color}"></i>
+              </div>
+              <div class="text-xs text-[var(--muted)]">${cat.label}</div>
+              <div class="text-lg font-bold font-display mt-1">${count}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function initDashboardCharts() {
+  const canvas = document.getElementById('dash-weekly-chart');
+  if (!canvas) return;
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: WEEKLY_DATA.map(d => d.day),
+      datasets: [{
+        data: WEEKLY_DATA.map(d => d.completed),
+        backgroundColor: 'rgba(246,173,60,0.6)',
+        borderRadius: 4,
+        barPercentage: 0.6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#8f866f', font: { size: 10 } } },
+        y: { display: false }
+      }
+    }
+  });
+}
+
+function calculateStreak() {
+  let streak = 0;
+  const d = new Date();
+  while (true) {
+    const ds = d.toISOString().split('T')[0];
+    const dayTasks = state.tasks.filter(t => t.date === ds);
+    const completed = dayTasks.filter(t => t.completed);
+    if (dayTasks.length > 0 && completed.length >= dayTasks.length * 0.5) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else break;
+    if (streak > 30) break;
+  }
+  return streak;
+}
+
+// ==================== TASKS VIEW ====================
+let taskFilter = { category: 'all', priority: 'all', status: 'all' };
+
+function filterByCategory(cat) {
+  taskFilter.category = cat;
+  renderView();
+}
+
+function renderTasks() {
+  let tasks = [...state.tasks];
+  if (taskFilter.category !== 'all') tasks = tasks.filter(t => t.category === taskFilter.category);
+  if (taskFilter.priority !== 'all') tasks = tasks.filter(t => t.priority === taskFilter.priority);
+  if (taskFilter.status === 'completed') tasks = tasks.filter(t => t.completed);
+  if (taskFilter.status === 'active') tasks = tasks.filter(t => !t.completed);
+  tasks.sort((a, b) => {
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    const pOrder = { high: 0, medium: 1, low: 2 };
+    return pOrder[a.priority] - pOrder[b.priority];
+  });
+
+  const active = state.tasks.filter(t => !t.completed).length;
+  const completed = state.tasks.filter(t => t.completed).length;
+
+  return `
+    <div class="animate-slide space-y-4">
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-3">
+        <select class="input-field w-auto text-sm" onchange="taskFilter.category=this.value; renderView()">
+          <option value="all" ${taskFilter.category==='all'?'selected':''}>All Categories</option>
+          ${Object.entries(CATEGORIES).map(([k, c]) => `<option value="${k}" ${taskFilter.category===k?'selected':''}>${c.label}</option>`).join('')}
+        </select>
+        <select class="input-field w-auto text-sm" onchange="taskFilter.priority=this.value; renderView()">
+          <option value="all" ${taskFilter.priority==='all'?'selected':''}>All Priorities</option>
+          <option value="high" ${taskFilter.priority==='high'?'selected':''}>High</option>
+          <option value="medium" ${taskFilter.priority==='medium'?'selected':''}>Medium</option>
+          <option value="low" ${taskFilter.priority==='low'?'selected':''}>Low</option>
+        </select>
+        <select class="input-field w-auto text-sm" onchange="taskFilter.status=this.value; renderView()">
+          <option value="all" ${taskFilter.status==='all'?'selected':''}>All Status</option>
+          <option value="active" ${taskFilter.status==='active'?'selected':''}>Active (${active})</option>
+          <option value="completed" ${taskFilter.status==='completed'?'selected':''}>Completed (${completed})</option>
+        </select>
+        <div class="ml-auto text-sm text-[var(--muted)]">${tasks.length} tasks</div>
+      </div>
+
+      <!-- Task List -->
+      <div class="space-y-2">
+        ${tasks.length ? tasks.map(t => taskItemHTML(t, true)).join('') : `
+          <div class="card p-12 text-center">
+            <i class="fa-solid fa-inbox text-4xl text-[var(--muted)] mb-4"></i>
+            <p class="text-[var(--muted)]">No tasks match your filters</p>
+            <button onclick="openNewTask()" class="btn-primary mt-4 text-sm">Create a Task</button>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function taskItemHTML(t, full = false) {
+  const cat = CATEGORIES[t.category] || { label: t.category, color: '#888', icon: 'fa-circle' };
+  return `
+    <div class="task-item ${t.completed ? 'completed' : ''}" data-id="${t.id}">
+      <div class="task-check ${t.completed ? 'checked' : ''}" onclick="toggleTask('${t.id}')">
+        ${t.completed ? '<i class="fa-solid fa-check"></i>' : ''}
+      </div>
+      <div class="cat-dot" style="background: ${cat.color}"></div>
+      <div class="flex-1 min-w-0">
+        <div class="task-title text-sm font-medium">${t.title}</div>
+        ${full && t.desc ? `<div class="text-xs text-[var(--muted)] truncate mt-0.5">${t.desc}</div>` : ''}
+      </div>
+      ${full ? `
+        <div class="flex items-center gap-2">
+          <span class="badge badge-${t.priority}">${t.priority}</span>
+          <span class="text-xs text-[var(--muted)] hidden sm:inline">${formatTime(t.time)}</span>
+          <span class="text-xs text-[var(--muted)] hidden sm:inline">${formatDate(t.date)}</span>
+          <button onclick="editTask('${t.id}')" class="text-[var(--muted)] hover:text-[var(--accent)] transition-colors p-1" title="Edit">
+            <i class="fa-solid fa-pen text-xs"></i>
+          </button>
+          <button onclick="deleteTask('${t.id}')" class="text-[var(--muted)] hover:text-[var(--rose)] transition-colors p-1" title="Delete">
+            <i class="fa-solid fa-trash text-xs"></i>
+          </button>
+        </div>
+      ` : `
+        <span class="badge badge-${t.priority} hidden sm:inline">${t.priority}</span>
+      `}
+    </div>
+  `;
+}
+
+// ==================== CALENDAR ====================
+function renderCalendar() {
+  const year = state.calendarYear;
+  const month = state.calendarMonth;
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrev = new Date(year, month, 0).getDate();
+  const monthName = new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const today = todayStr();
+
+  let cells = '';
+  // Previous month fill
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const d = daysInPrev - i;
+    cells += `<div class="cal-day other-month">${d}</div>`;
+  }
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === today;
+    const hasTasks = state.tasks.some(t => t.date === dateStr);
+    const taskCount = state.tasks.filter(t => t.date === dateStr).length;
+    const isSelected = dateStr === state.selectedDate;
+    cells += `
+      <div class="cal-day ${isToday ? 'today' : ''} ${hasTasks ? 'has-tasks' : ''} ${isSelected ? 'ring-2 ring-[var(--accent)]' : ''}"
+           onclick="selectDate('${dateStr}')"
+           style="${taskCount > 2 ? '--dot-color: var(--rose)' : ''}">
+        ${d}
+      </div>
+    `;
+  }
+  // Next month fill
+  const totalCells = firstDay + daysInMonth;
+  const remaining = (7 - (totalCells % 7)) % 7;
+  for (let d = 1; d <= remaining; d++) {
+    cells += `<div class="cal-day other-month">${d}</div>`;
+  }
+
+  const selectedTasks = state.tasks.filter(t => t.date === state.selectedDate);
+
+  return `
+    <div class="animate-slide space-y-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button onclick="changeMonth(-1)" class="btn-ghost py-2 px-3"><i class="fa-solid fa-chevron-left"></i></button>
+          <h3 class="font-display font-bold text-xl">${monthName}</h3>
+          <button onclick="changeMonth(1)" class="btn-ghost py-2 px-3"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 card p-5">
+          <div class="grid grid-cols-7 gap-1 mb-2">
+            ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="text-center text-xs text-[var(--muted)] font-semibold py-2">${d}</div>`).join('')}
+          </div>
+          <div class="grid grid-cols-7 gap-1">
+            ${cells}
+          </div>
+        </div>
+
+        <div class="card p-5">
+          <h3 class="font-display font-bold mb-4">${formatDate(state.selectedDate) || 'Select a date'}</h3>
+          <div class="space-y-2">
+            ${selectedTasks.length ? selectedTasks.map(t => taskItemHTML(t)).join('') : `
+              <p class="text-[var(--muted)] text-sm text-center py-6">No tasks on this date</p>
+              <button onclick="openNewTask('${state.selectedDate}')" class="btn-primary w-full text-sm">Add Task</button>
+            `}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function changeMonth(dir) {
+  state.calendarMonth += dir;
+  if (state.calendarMonth > 11) { state.calendarMonth = 0; state.calendarYear++; }
+  if (state.calendarMonth < 0) { state.calendarMonth = 11; state.calendarYear--; }
+  renderView();
+}
+
+function selectDate(dateStr) {
+  state.selectedDate = dateStr;
+  renderView();
+}
+
+// ==================== ANALYTICS ====================
+function renderAnalytics() {
+  const totalTasks = state.tasks.length;
+  const completed = state.tasks.filter(t => t.completed).length;
+  const completionRate = totalTasks ? Math.round((completed / totalTasks) * 100) : 0;
+  const totalTime = state.tasks.reduce((s, t) => s + (t.timeSpent || 0), 0);
+  const avgFocus = WEEKLY_DATA.reduce((s, d) => s + d.focus, 0) / WEEKLY_DATA.length;
+
+  // Category breakdown
+  const catStats = {};
+  Object.keys(CATEGORIES).forEach(k => {
+    const tasks = state.tasks.filter(t => t.category === k);
+    catStats[k] = { total: tasks.length, completed: tasks.filter(t => t.completed).length, time: tasks.reduce((s, t) => s + (t.timeSpent || 0), 0) };
+  });
+
+  return `
+    <div class="animate-slide space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="card p-5 text-center">
+          <div class="text-4xl font-bold font-display" style="color: var(--accent)">${completionRate}%</div>
+          <div class="text-sm text-[var(--muted)] mt-1">Completion Rate</div>
+        </div>
+        <div class="card p-5 text-center">
+          <div class="text-4xl font-bold font-display" style="color: var(--emerald)">${formatTime(totalTime)}</div>
+          <div class="text-sm text-[var(--muted)] mt-1">Total Time Tracked</div>
+        </div>
+        <div class="card p-5 text-center">
+          <div class="text-4xl font-bold font-display" style="color: var(--sky)">${Math.round(avgFocus)}%</div>
+          <div class="text-sm text-[var(--muted)] mt-1">Average Focus Score</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card p-5">
+          <h3 class="font-display font-bold mb-4">Weekly Completion</h3>
+          <canvas id="analytics-weekly" height="200"></canvas>
+        </div>
+        <div class="card p-5">
+          <h3 class="font-display font-bold mb-4">Focus Trend</h3>
+          <canvas id="analytics-focus" height="200"></canvas>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card p-5">
+          <h3 class="font-display font-bold mb-4">Category Distribution</h3>
+          <canvas id="analytics-categories" height="220"></canvas>
+        </div>
+        <div class="card p-5">
+          <h3 class="font-display font-bold mb-4">Category Performance</h3>
+          <div class="space-y-3">
+            ${Object.entries(catStats).filter(([,v]) => v.total > 0).map(([k, v]) => {
+              const cat = CATEGORIES[k];
+              const pct = v.total ? Math.round((v.completed / v.total) * 100) : 0;
+              return `
+                <div>
+                  <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                      <i class="fa-solid ${cat.icon} text-xs" style="color: ${cat.color}"></i>
+                      <span class="text-sm">${cat.label}</span>
+                    </div>
+                    <span class="text-xs text-[var(--muted)]">${v.completed}/${v.total} — ${formatTime(v.time)}</span>
+                  </div>
+                  <div class="h-2 bg-[var(--bg)] rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-700" style="width: ${pct}%; background: ${cat.color}"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Productivity heatmap (hourly) -->
+      <div class="card p-5">
+        <h3 class="font-display font-bold mb-4">Productivity by Hour</h3>
+        <div class="grid grid-cols-12 gap-1">
+          ${Array.from({length: 24}, (_, h) => {
+            const intensity = h >= 9 && h <= 12 ? 0.8 : h >= 14 && h <= 17 ? 0.6 : h >= 19 && h <= 22 ? 0.4 : 0.1;
+            return `<div class="aspect-square rounded" style="background: rgba(246,173,60,${intensity})" title="${h}:00 — ${Math.round(intensity * 100)}%"></div>`;
+          }).join('')}
+        </div>
+        <div class="flex justify-between text-xs text-[var(--muted)] mt-2">
+          <span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function initAnalyticsCharts() {
+  // Weekly completion
+  const wCanvas = document.getElementById('analytics-weekly');
+  if (wCanvas) {
+    new Chart(wCanvas, {
+      type: 'bar',
+      data: {
+        labels: WEEKLY_DATA.map(d => d.day),
+        datasets: [
+          { label: 'Completed', data: WEEKLY_DATA.map(d => d.completed), backgroundColor: 'rgba(246,173,60,0.7)', borderRadius: 6, barPercentage: 0.5 },
+          { label: 'Total', data: WEEKLY_DATA.map(d => d.total), backgroundColor: 'rgba(246,173,60,0.2)', borderRadius: 6, barPercentage: 0.5 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#8f866f', font: { size: 11 } } } },
+        scales: {
+          x: { grid: { color: 'rgba(46,42,35,0.5)' }, ticks: { color: '#8f866f' } },
+          y: { grid: { color: 'rgba(46,42,35,0.5)' }, ticks: { color: '#8f866f' }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // Focus trend
+  const fCanvas = document.getElementById('analytics-focus');
+  if (fCanvas) {
+    new Chart(fCanvas, {
+      type: 'line',
+      data: {
+        labels: WEEKLY_DATA.map(d => d.day),
+        datasets: [{
+          label: 'Focus %', data: WEEKLY_DATA.map(d => d.focus),
+          borderColor: '#34d399', backgroundColor: 'rgba(52,211,153,0.1)',
+          fill: true, tension: 0.4, pointRadius: 5, pointBackgroundColor: '#34d399'
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#8f866f', font: { size: 11 } } } },
+        scales: {
+          x: { grid: { color: 'rgba(46,42,35,0.5)' }, ticks: { color: '#8f866f' } },
+          y: { grid: { color: 'rgba(46,42,35,0.5)' }, ticks: { color: '#8f866f' }, min: 0, max: 100 }
+        }
+      }
+    });
+  }
+
+  // Categories
+  const cCanvas = document.getElementById('analytics-categories');
+  if (cCanvas) {
+    const catData = Object.entries(CATEGORIES).map(([k, c]) => ({
+      label: c.label, count: state.tasks.filter(t => t.category === k).length, color: c.color
+    })).filter(d => d.count > 0);
+
+    new Chart(cCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: catData.map(d => d.label),
+        datasets: [{
+          data: catData.map(d => d.count),
+          backgroundColor: catData.map(d => d.color),
+          borderWidth: 0, hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: { legend: { position: 'right', labels: { color: '#c9c4b8', padding: 12, font: { size: 12 } } } }
+      }
+    });
+  }
+}
+
+// ==================== WHATSAPP ====================
+function renderWhatsApp() {
+  return `
+    <div class="animate-slide" style="max-width: 600px; margin: 0 auto;">
+      <div class="card overflow-hidden" style="background: #0b141a; border-color: #1f2c33;">
+        <!-- Header -->
+        <div class="flex items-center gap-3 p-4" style="background: #1f2c33; border-bottom: 1px solid #2a3942;">
+          <div class="w-10 h-10 rounded-full bg-[rgba(52,211,153,0.2)] flex items-center justify-center">
+            <i class="fa-solid fa-bolt text-[var(--accent)]"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-sm font-semibold text-[#e9edef]">Momentum Assistant</div>
+            <div class="text-xs text-[#8696a0]">Online — Your productivity companion</div>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="wa-messages" class="p-4 space-y-2 overflow-y-auto" style="height: 420px; background: #0b141a; background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22><rect fill=%22%230b141a%22 width=%2260%22 height=%2260%22/><circle fill=%22%230d1620%22 cx=%2230%22 cy=%2230%22 r=%221%22/></svg>')">
+        </div>
+
+        <!-- Input -->
+        <div class="flex items-center gap-2 p-3" style="background: #1f2c33;">
+          <input type="text" id="wa-input" class="flex-1 rounded-lg px-4 py-2 text-sm outline-none" style="background: #2a3942; color: #e9edef; border: none;" placeholder="Type a command..." onkeydown="if(event.key==='Enter')sendWAMessage()">
+          <button onclick="sendWAMessage()" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors" style="background: var(--accent);">
+            <i class="fa-solid fa-paper-plane text-[#0f0e0c] text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Commands -->
+      <div class="mt-4 card p-4">
+        <h4 class="text-sm font-semibold text-[var(--muted)] mb-3">Quick Commands</h4>
+        <div class="flex flex-wrap gap-2">
+          ${['/tasks', '/today', '/add Study for exam', '/done t1', '/schedule', '/report', '/focus', '/help'].map(cmd => `
+            <button onclick="sendQuickCmd('${cmd}')" class="text-xs px-3 py-1.5 rounded-full border border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors">${cmd}</button>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function initWhatsApp() {
+  state.waMessages = [
+    { from: 'bot', text: `Hey ${state.user?.name || 'there'}! I'm your Momentum assistant. Send /help to see what I can do.` }
+  ];
+  renderWAMessages();
+}
+
+function renderWAMessages() {
+  const container = document.getElementById('wa-messages');
+  if (!container) return;
+  container.innerHTML = state.waMessages.map(m => `
+    <div class="flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}">
+      <div class="wa-bubble ${m.from === 'user' ? 'sent' : 'received'}">
+        <div style="white-space: pre-wrap;">${m.text}</div>
+        <div class="text-[10px] mt-1 ${m.from === 'user' ? 'text-[#8696a0]' : 'text-[#8696a0]'}" style="text-align: right;">${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+      </div>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendWAMessage() {
+  const input = document.getElementById('wa-input');
+  const text = input.value.trim();
+  if (!text) return;
+  state.waMessages.push({ from: 'user', text });
+  input.value = '';
+  renderWAMessages();
+
+  // Show typing
+  setTimeout(() => {
+    const response = processWACommand(text);
+    state.waMessages.push({ from: 'bot', text: response });
+    renderWAMessages();
+  }, 600 + Math.random() * 400);
+}
+
+function sendQuickCmd(cmd) {
+  const input = document.getElementById('wa-input');
+  if (input) { input.value = cmd; sendWAMessage(); }
+}
+
+function processWACommand(text) {
+  const lower = text.toLowerCase();
+  if (lower === '/help') {
+    return `Available commands:
+
+/tasks — List active tasks
+/today — Today's schedule
+/add [title] — Add a new task
+/done [id] — Mark task complete
+/schedule — Upcoming deadlines
+/report — Daily intelligence report
+/focus — Current focus score
+/streak — Your current streak`;
+  }
+
+  if (lower === '/tasks') {
+    const active = state.tasks.filter(t => !t.completed).slice(0, 6);
+    if (!active.length) return 'No active tasks! Time to add some.';
+    return `Active Tasks:\n\n` + active.map(t => `• ${t.title} [${t.priority}] (${CATEGORIES[t.category]?.label || t.category})`).join('\n');
+  }
+
+  if (lower === '/today') {
+    const today = state.tasks.filter(t => t.date === todayStr());
+    const done = today.filter(t => t.completed).length;
+    return `Today: ${done}/${today.length} completed\n\n` + today.map(t => `${t.completed ? '✅' : '⬜'} ${t.title}`).join('\n');
+  }
+
+  if (lower.startsWith('/add ')) {
+    const title = text.slice(5).trim();
+    if (!title) return 'Please provide a task title. Example: /add Study for exam';
+    const newTask = { id: genId(), title, desc: '', category: 'personal', priority: 'medium', date: todayStr(), time: 30, completed: false, createdAt: Date.now(), completedAt: null, timeSpent: 0 };
+    state.tasks.push(newTask);
+    saveState();
+    return `Task added: "${title}"\nID: ${newTask.id}\nPriority: medium\nDate: today`;
+  }
+
+  if (lower.startsWith('/done ')) {
+    const id = text.slice(6).trim();
+    const task = state.tasks.find(t => t.id === id || t.id.startsWith(id));
+    if (!task) return `Task not found. Use /tasks to see IDs.`;
+    task.completed = true;
+    task.completedAt = Date.now();
+    saveState();
+    return `Completed: "${task.title}"\nGreat job! Keep the momentum going!`;
+  }
+
+  if (lower === '/schedule') {
+    const upcoming = state.tasks.filter(t => !t.completed && t.date >= todayStr()).sort((a,b) => a.date.localeCompare(b.date)).slice(0, 5);
+    return `Upcoming:\n\n` + upcoming.map(t => `• ${formatDate(t.date)} — ${t.title} [${t.priority}]`).join('\n');
+  }
+
+  if (lower === '/report') {
+    const today = state.tasks.filter(t => t.date === todayStr());
+    const done = today.filter(t => t.completed).length;
+    const total = today.length;
+    const focusScore = WEEKLY_DATA.reduce((s, d) => s + d.focus, 0) / WEEKLY_DATA.length;
+    return `Daily Intelligence Report\n━━━━━━━━━━━━━━━\n\nTasks: ${done}/${total} completed (${total ? Math.round(done/total*100) : 0}%)\nFocus Score: ${Math.round(focusScore)}%\nStreak: ${calculateStreak()} days\n\nMost productive: 9 AM - 12 PM\nContext switches: 4 (moderate)\n\nRecommendations:\n→ Start with high-priority tasks\n→ Block deep work before noon\n→ Take breaks every 90 min`;
+  }
+
+  if (lower === '/focus') {
+    const focusScore = WEEKLY_DATA.reduce((s, d) => s + d.focus, 0) / WEEKLY_DATA.length;
+    return `Current Focus Score: ${Math.round(focusScore)}%\n\n${focusScore > 75 ? 'Excellent focus! You\'re in the zone.' : focusScore > 50 ? 'Good focus. Minimize distractions to improve.' : 'Focus is low. Try a Pomodoro session.'}`;
+  }
+
+  if (lower === '/streak') {
+    return `Current Streak: ${calculateStreak()} days\n\n${calculateStreak() >= 7 ? 'Incredible consistency! You\'re on fire.' : calculateStreak() >= 3 ? 'Nice streak! Keep building momentum.' : 'Just getting started. Complete your tasks today!'}`;
+  }
+
+  return `I didn't understand that. Type /help for available commands.`;
+}
+
+// ==================== INTELLIGENCE ====================
+function renderIntelligence() {
+  const today = state.tasks.filter(t => t.date === todayStr());
+  const done = today.filter(t => t.completed).length;
+  const total = today.length;
+  const focusScore = WEEKLY_DATA.reduce((s, d) => s + d.focus, 0) / WEEKLY_DATA.length;
+  const streak = calculateStreak();
+  const totalTime = today.reduce((s, t) => s + (t.timeSpent || 0), 0);
+  const highPriorityLeft = state.tasks.filter(t => !t.completed && t.priority === 'high' && t.date === todayStr());
+
+  // Generate AI insights
+  const insights = generateInsights(done, total, focusScore, streak, totalTime);
+
+  return `
+    <div class="animate-slide space-y-6" style="max-width: 800px;">
+      <!-- Main Report -->
+      <div class="report-card accent-glow">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[var(--accent-dim)] flex items-center justify-center">
+            <i class="fa-solid fa-brain text-xl text-[#0f0e0c]"></i>
+          </div>
+          <div>
+            <h2 class="font-display font-bold text-xl">Daily Intelligence Report</h2>
+            <p class="text-sm text-[var(--muted)]">${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div class="text-center">
+            <div class="text-2xl font-bold font-display" style="color: var(--accent)">${done}/${total}</div>
+            <div class="text-xs text-[var(--muted)]">Tasks Done</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold font-display" style="color: var(--emerald)">${Math.round(focusScore)}%</div>
+            <div class="text-xs text-[var(--muted)]">Focus Score</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold font-display" style="color: #f97316">${streak}</div>
+            <div class="text-xs text-[var(--muted)]">Day Streak</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold font-display" style="color: var(--sky)">${formatTime(totalTime)}</div>
+            <div class="text-xs text-[var(--muted)]">Time Tracked</div>
+          </div>
+        </div>
+
+        <div class="space-y-3 text-sm leading-relaxed" style="color: var(--fg);">
+          ${insights.map(ins => `
+            <div class="flex gap-3 items-start">
+              <i class="fa-solid ${ins.icon} mt-0.5" style="color: ${ins.color};"></i>
+              <span>${ins.text}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="card p-5">
+        <h3 class="font-display font-bold text-lg mb-4">Recommended for Tomorrow</h3>
+        <div class="space-y-3">
+          ${highPriorityLeft.length ? `
+            <div class="flex gap-3 items-start">
+              <i class="fa-solid fa-arrow-right text-[var(--accent)] mt-0.5"></i>
+              <div>
+                <div class="text-sm font-medium">Start with high-priority tasks</div>
+                <div class="text-xs text-[var(--muted)] mt-1">${highPriorityLeft.map(t => t.title).join(', ')}</div>
+              </div>
+            </div>
+          ` : ''}
+          <div class="flex gap-3 items-start">
+            <i class="fa-solid fa-arrow-right text-[var(--emerald)] mt-0.5"></i>
+            <div>
+              <div class="text-sm font-medium">Block 9 AM - 12 PM for deep work</div>
+              <div class="text-xs text-[var(--muted)] mt-1">Your peak performance window based on historical data</div>
+            </div>
+          </div>
+          <div class="flex gap-3 items-start">
+            <i class="fa-solid fa-arrow-right text-[var(--rose)] mt-0.5"></i>
+            <div>
+              <div class="text-sm font-medium">Avoid multitasking after 7 PM</div>
+              <div class="text-xs text-[var(--muted)] mt-1">Evening context-switching reduces next-day focus by 23%</div>
+            </div>
+          </div>
+          <div class="flex gap-3 items-start">
+            <i class="fa-solid fa-arrow-right text-[var(--sky)] mt-0.5"></i>
+            <div>
+              <div class="text-sm font-medium">Schedule a 15-min review at 10 PM</div>
+              <div class="text-xs text-[var(--muted)] mt-1">Reflection improves next-day planning accuracy by 40%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Pattern -->
+      <div class="card p-5">
+        <h3 class="font-display font-bold text-lg mb-4">Your Productivity Pattern</h3>
+        <div class="grid grid-cols-7 gap-2">
+          ${WEEKLY_DATA.map(d => {
+            const intensity = d.focus / 100;
+            return `
+              <div class="text-center">
+                <div class="text-xs text-[var(--muted)] mb-2">${d.day}</div>
+                <div class="w-full aspect-square rounded-lg flex items-center justify-center text-xs font-bold" style="background: rgba(246,173,60,${intensity * 0.8 + 0.1}); color: ${intensity > 0.5 ? '#0f0e0c' : 'var(--fg)'}">
+                  ${d.focus}%
+                </div>
+                <div class="text-xs text-[var(--muted)] mt-1">${d.completed}/${d.total}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Burnout Risk -->
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-display font-bold text-lg">Burnout Risk Assessment</h3>
+          <span class="badge ${focusScore > 60 ? 'badge-low' : 'badge-high'}">${focusScore > 60 ? 'Low Risk' : 'High Risk'}</span>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span>Workload Balance</span><span class="text-[var(--muted)]">${Math.min(85, 40 + done * 10)}%</span>
+            </div>
+            <div class="h-2 bg-[var(--bg)] rounded-full overflow-hidden">
+              <div class="h-full rounded-full" style="width: ${Math.min(85, 40 + done * 10)}%; background: ${done > 5 ? 'var(--rose)' : 'var(--emerald)'}"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span>Recovery Time</span><span class="text-[var(--muted)]">${70}%</span>
+            </div>
+            <div class="h-2 bg-[var(--bg)] rounded-full overflow-hidden">
+              <div class="h-full rounded-full" style="width: 70%; background: var(--emerald)"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span>Consistency</span><span class="text-[var(--muted)]">${Math.min(100, streak * 12)}%</span>
+            </div>
+            <div class="h-2 bg-[var(--bg)] rounded-full overflow-hidden">
+              <div class="h-full rounded-full" style="width: ${Math.min(100, streak * 12)}%; background: var(--accent)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function generateInsights(done, total, focus, streak, time) {
+  const insights = [];
+  const pct = total ? Math.round((done / total) * 100) : 0;
+
+  if (pct >= 80) {
+    insights.push({ icon: 'fa-trophy', color: 'var(--accent)', text: `Outstanding completion rate — ${done}/${total} tasks done today. You're performing in the top 15% of your weekly average.` });
+  } else if (pct >= 50) {
+    insights.push({ icon: 'fa-chart-line', color: 'var(--emerald)', text: `Solid progress today — ${done}/${total} tasks completed. You're on track for a strong finish.` });
+  } else {
+    insights.push({ icon: 'fa-circle-info', color: 'var(--sky)', text: `${done}/${total} tasks completed so far. Consider breaking larger tasks into smaller chunks.` });
+  }
+
+  if (focus > 75) {
+    insights.push({ icon: 'fa-bullseye', color: 'var(--emerald)', text: `Focus score is ${Math.round(focus)}% — you're in a deep work state. Protect this time from interruptions.` });
+  } else if (focus > 50) {
+    insights.push({ icon: 'fa-lightbulb', color: 'var(--accent)', text: `Focus score at ${Math.round(focus)}%. Try the Pomodoro technique: 25 min focused work, 5 min break.` });
+  } else {
+    insights.push({ icon: 'fa-triangle-exclamation', color: 'var(--rose)', text: `Focus score dropped to ${Math.round(focus)}%. Too many context switches detected. Close unrelated tabs and apps.` });
+  }
+
+  if (streak >= 7) {
+    insights.push({ icon: 'fa-fire', color: '#f97316', text: `${streak}-day streak! Consistency is the compound interest of productivity. You're building powerful habits.` });
+  } else if (streak >= 3) {
+    insights.push({ icon: 'fa-fire', color: '#f97316', text: `${streak}-day streak growing. Reach 7 days for a significant habit milestone.` });
+  }
+
+  if (time > 120) {
+    insights.push({ icon: 'fa-clock', color: 'var(--sky)', text: `${formatTime(time)} of focused work today. You spent most productive time between 9 AM - 12 PM.` });
+  }
+
+  const dsaTasks = state.tasks.filter(t => t.category === 'dsa' && !t.completed);
+  if (dsaTasks.length > 0) {
+    insights.push({ icon: 'fa-code', color: 'var(--accent)', text: `${dsaTasks.length} DSA tasks pending. Schedule them during your peak hours for maximum retention.` });
+  }
+
+  insights.push({ icon: 'fa-wand-magic-sparkles', color: 'var(--emerald)', text: `Based on your patterns, you complete 23% more tasks when you start before 10 AM. Set tomorrow's first task for 9 AM.` });
+
+  return insights;
+}
+
+// ==================== SCHEDULER ====================
+function renderScheduler() {
+  const schedules = [
+    { time: '6:00 AM', label: 'Morning Schedule', desc: 'WhatsApp delivery of today\'s task list', active: true, icon: 'fa-sun', color: 'var(--accent)' },
+    { time: '9:00 AM', label: 'Focus Mode Start', desc: 'Block distractions, enable DND', active: true, icon: 'fa-bullseye', color: 'var(--emerald)' },
+    { time: '12:00 PM', label: 'Midday Check-in', desc: 'Progress update + reschedule if needed', active: false, icon: 'fa-arrows-rotate', color: 'var(--sky)' },
+    { time: '3:00 PM', label: 'Afternoon Boost', desc: 'Motivational nudge + remaining tasks', active: true, icon: 'fa-bolt', color: '#f97316' },
+    { time: '7:00 PM', label: 'Evening Wind-down', desc: 'Stop new tasks, wrap up open items', active: false, icon: 'fa-moon', color: '#a78bfa' },
+    { time: '10:00 PM', label: 'Night Reflection', desc: 'AI-powered daily intelligence report', active: true, icon: 'fa-brain', color: 'var(--accent)' },
+  ];
+
+  const deadlineReminders = state.tasks.filter(t => !t.completed && t.date && t.date <= tomorrowStr()).sort((a,b) => a.date.localeCompare(b.date));
+
+  return `
+    <div class="animate-slide space-y-6" style="max-width: 700px;">
+      <!-- Daily Schedule -->
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-display font-bold text-lg">Daily Automation Schedule</h3>
+          <span class="text-xs text-[var(--muted)]">Celery Beat Config</span>
+        </div>
+        <div class="space-y-1">
+          ${schedules.map((s, i) => `
+            <div class="timeline-item relative flex gap-4 p-3 rounded-lg hover:bg-[var(--card-hover)] transition-colors">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background: ${s.color}18">
+                <i class="fa-solid ${s.icon}" style="color: ${s.color}"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-semibold">${s.label}</span>
+                  <span class="text-xs text-[var(--muted)]">${s.time}</span>
+                </div>
+                <div class="text-xs text-[var(--muted)] mt-0.5">${s.desc}</div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input type="checkbox" ${s.active ? 'checked' : ''} class="sr-only peer" onchange="toggleSchedule(${i}, this.checked)">
+                <div class="w-9 h-5 bg-[var(--border)] peer-checked:bg-[var(--accent)] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+              </label>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Deadline Reminders -->
+      <div class="card p-5">
+        <h3 class="font-display font-bold text-lg mb-4">Upcoming Deadlines</h3>
+        <div class="space-y-2">
+          ${deadlineReminders.length ? deadlineReminders.slice(0, 6).map(t => {
+            const isOverdue = t.date < todayStr();
+            const isToday = t.date === todayStr();
+            return `
+              <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg)] border border-[var(--border)]">
+                <div class="cat-dot" style="background: ${CATEGORIES[t.category]?.color || '#888'}"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium truncate">${t.title}</div>
+                  <div class="text-xs ${isOverdue ? 'text-[var(--rose)]' : isToday ? 'text-[var(--accent)]' : 'text-[var(--muted)]'}">
+                    ${isOverdue ? 'Overdue!' : isToday ? 'Due today' : 'Due ' + formatDate(t.date)}
+                  </div>
+                </div>
+                <span class="badge badge-${t.priority}">${t.priority}</span>
+              </div>
+            `;
+          }).join('') : '<p class="text-[var(--muted)] text-sm text-center py-4">No upcoming deadlines</p>'}
+        </div>
+      </div>
+
+      <!-- Celery Worker Status -->
+      <div class="card p-5">
+        <h3 class="font-display font-bold text-lg mb-4">Worker Status</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-3 rounded-lg bg-[var(--bg)] border border-[var(--border)]">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-2 h-2 rounded-full bg-[var(--emerald)]" style="animation: pulse 2s infinite;"></div>
+              <span class="text-sm font-semibold">FastAPI Server</span>
+            </div>
+            <div class="text-xs text-[var(--muted)]">API + WebSockets + Webhooks</div>
+            <div class="text-xs text-[var(--emerald)] mt-1">Running</div>
+          </div>
+          <div class="p-3 rounded-lg bg-[var(--bg)] border border-[var(--border)]">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-2 h-2 rounded-full bg-[var(--emerald)]" style="animation: pulse 2s infinite;"></div>
+              <span class="text-sm font-semibold">Celery Worker</span>
+            </div>
+            <div class="text-xs text-[var(--muted)]">Background jobs + AI</div>
+            <div class="text-xs text-[var(--emerald)] mt-1">2 processes active</div>
+          </div>
+          <div class="p-3 rounded-lg bg-[var(--bg)] border border-[var(--border)]">
+            <div class="flex items-center gap-2 mb-2">
+              <div class="w-2 h-2 rounded-full bg-[var(--accent)]" style="animation: pulse 2s infinite;"></div>
+              <span class="text-sm font-semibold">Celery Beat</span>
+            </div>
+            <div class="text-xs text-[var(--muted)]">Scheduled jobs</div>
+            <div class="text-xs text-[var(--accent)] mt-1">Next: 10:00 PM reflection</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Architecture Diagram -->
+      <div class="card p-5">
+        <h3 class="font-display font-bold text-lg mb-4">Deployment Architecture</h3>
+        <div class="text-xs font-mono text-[var(--muted)] p-4 rounded-lg bg-[var(--bg)] border border-[var(--border)] leading-relaxed overflow-x-auto" style="white-space: pre;">
+┌─────────────────┐
+│   Next.js App   │  → Vercel (CDN + SSR)
+│  (Frontend UI)  │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│   FastAPI API   │  → Railway (Docker)
+│ Auth + Tasks    │
+└────────┬────────┘
+         │
+    ┌────┼────┐
+    ▼    ▼    ▼
+┌──────┐┌──────┐┌──────────┐
+│NeonPG││Upstash││WebSocket │
+│  DB  ││Redis ││  Layer   │
+└──────┘└──┬───┘└──────────┘
+           ▼
+    ┌──────────────┐
+    │Celery Workers│  → Railway (Docker)
+    │  + Beat      │
+    └──────┬───────┘
+           ▼
+    ┌──────────────┐
+    │WhatsApp + AI │  → Meta API + OpenAI
+    └──────────────┘</div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleSchedule(index, active) {
+  showToast(`${active ? 'Enabled' : 'Disabled'} schedule item`, 'info');
+}
+
+// ==================== TASK CRUD ====================
+function openNewTask(date) {
+  document.getElementById('modal-title').textContent = 'New Task';
+  document.getElementById('task-id').value = '';
+  document.getElementById('task-title').value = '';
+  document.getElementById('task-desc').value = '';
+  document.getElementById('task-cat').value = 'personal';
+  document.getElementById('task-priority').value = 'medium';
+  document.getElementById('task-date').value = date || todayStr();
+  document.getElementById('task-time').value = '30';
+  document.getElementById('task-modal').classList.add('show');
+}
+
+function editTask(id) {
+  const t = state.tasks.find(t => t.id === id);
+  if (!t) return;
+  document.getElementById('modal-title').textContent = 'Edit Task';
+  document.getElementById('task-id').value = t.id;
+  document.getElementById('task-title').value = t.title;
+  document.getElementById('task-desc').value = t.desc || '';
+  document.getElementById('task-cat').value = t.category;
+  document.getElementById('task-priority').value = t.priority;
+  document.getElementById('task-date').value = t.date || '';
+  document.getElementById('task-time').value = String(t.time || 30);
+  document.getElementById('task-modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('task-modal').classList.remove('show');
+}
+
+function saveTask(e) {
+  e.preventDefault();
+  const id = document.getElementById('task-id').value;
+  const data = {
+    title: document.getElementById('task-title').value,
+    desc: document.getElementById('task-desc').value,
+    category: document.getElementById('task-cat').value,
+    priority: document.getElementById('task-priority').value,
+    date: document.getElementById('task-date').value,
+    time: parseInt(document.getElementById('task-time').value),
+  };
+
+  if (id) {
+    const t = state.tasks.find(t => t.id === id);
+    if (t) Object.assign(t, data);
+    showToast('Task updated');
+  } else {
+    state.tasks.push({
+      id: genId(), ...data,
+      completed: false, createdAt: Date.now(),
+      completedAt: null, timeSpent: 0,
+    });
+    showToast('Task created');
+  }
+
+  saveState();
+  closeModal();
+  renderView();
+}
+
+function toggleTask(id) {
+  const t = state.tasks.find(t => t.id === id);
+  if (!t) return;
+  t.completed = !t.completed;
+  t.completedAt = t.completed ? Date.now() : null;
+  if (t.completed) {
+    t.timeSpent = t.timeSpent || Math.round(t.time * (0.6 + Math.random() * 0.5));
+  }
+  saveState();
+  renderView();
+  if (t.completed) showToast(`Completed: ${t.title}`);
+}
+
+function deleteTask(id) {
+  const t = state.tasks.find(t => t.id === id);
+  if (!t) return;
+  state.tasks = state.tasks.filter(t => t.id !== id);
+  saveState();
+  renderView();
+  showToast(`Deleted: ${t.title}`, 'info');
+}
+
+function handleSearch(query) {
+  if (!query.trim()) { renderView(); return; }
+  const q = query.toLowerCase();
+  const results = state.tasks.filter(t =>
+    t.title.toLowerCase().includes(q) ||
+    (t.desc && t.desc.toLowerCase().includes(q)) ||
+    t.category.toLowerCase().includes(q)
+  );
+
+  if (state.currentView !== 'tasks') switchView('tasks');
+
+  const area = document.getElementById('content-area');
+  area.innerHTML = `
+    <div class="animate-slide space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-bold text-lg">Search Results: "${query}"</h3>
+        <span class="text-sm text-[var(--muted)]">${results.length} found</span>
+      </div>
+      <div class="space-y-2">
+        ${results.length ? results.map(t => taskItemHTML(t, true)).join('') : '<p class="text-[var(--muted)] text-center py-8">No tasks match your search</p>'}
+      </div>
+    </div>
+  `;
+}
+
+// ==================== PARTICLES (Background animation) ====================
+function initParticles() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.4;';
+  document.body.prepend(canvas);
+  const ctx = canvas.getContext('2d');
+
+  let w, h, particles = [];
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Create particles
+  for (let i = 0; i < 40; i++) {
+    particles.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 2 + 0.5,
+      alpha: Math.random() * 0.3 + 0.1,
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = w;
+      if (p.x > w) p.x = 0;
+      if (p.y < 0) p.y = h;
+      if (p.y > h) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(246,173,60,${p.alpha})`;
+      ctx.fill();
+    });
+
+    // Draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(246,173,60,${0.05 * (1 - dist / 150)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  // Respect prefers-reduced-motion
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (!mq.matches) animate();
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  initParticles();
+
+  if (state.user) {
+    enterApp();
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+    if (e.ctrlKey && e.key === 'k') { e.preventDefault(); document.getElementById('search-input')?.focus(); }
+    if (e.ctrlKey && e.key === 'n') { e.preventDefault(); openNewTask(); }
+  });
+
+  // Close modal on overlay click
+  document.getElementById('task-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'task-modal') closeModal();
+  });
+});
+</script>
+</body>
+</html>
