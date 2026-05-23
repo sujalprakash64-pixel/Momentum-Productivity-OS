@@ -12,11 +12,13 @@ def clamp(value: float, low: float = 0, high: float = 100) -> float:
 def score_task(task: Task) -> dict[str, float]:
     planned = max(task.estimated_minutes or 1, 1)
     actual = max(task.actual_minutes or 0, 0)
+    idle_minutes = task.idle_minutes or 0
+    context_switches = task.context_switches or 0
     efficiency = 100 if actual == 0 else clamp((planned / max(actual, 1)) * 100)
     completion = 100 if task.status == TaskStatus.completed else 45 if task.status == TaskStatus.in_progress else 15
     focus_duration = clamp((actual / 90) * 100)
-    idle_penalty = clamp((task.idle_minutes / planned) * 40)
-    switch_penalty = clamp(task.context_switches * 7)
+    idle_penalty = clamp((idle_minutes / planned) * 40)
+    switch_penalty = clamp(context_switches * 7)
     deadline_score = 70
 
     if task.deadline:

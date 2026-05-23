@@ -32,3 +32,11 @@ export type Idea = {
   tags: string[];
   converted_task_id?: string | null;
 };
+
+export type User = {
+  id: string;
+  email: string;
+  name: string;
+  whatsapp_number?: string | null;
+  timezone: string;
+};

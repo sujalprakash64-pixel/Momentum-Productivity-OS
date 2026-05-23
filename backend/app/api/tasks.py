@@ -7,6 +7,14 @@ from app.db.session import get_db
 from app.deps import get_current_user
 from app.models import FocusSession, Task, TaskStatus, User
 from app.schemas import TaskCreate, TaskOut, TaskUpdate
+from app.services.notifications import (
+    notify_task_completed,
+    notify_task_created,
+    notify_task_deleted,
+    notify_task_started,
+    notify_task_stopped,
+    notify_task_updated,
+)
 from app.services.productivity import score_task
 
 
@@ -47,6 +55,7 @@ async def create_task(payload: TaskCreate, db: AsyncSession = Depends(get_db), u
     db.add(task)
     await db.commit()
     await db.refresh(task)
+    await notify_task_created(user, task)
     return task
 
 
@@ -61,14 +70,17 @@ async def update_task(task_id: uuid.UUID, payload: TaskUpdate, db: AsyncSession 
     task.ai_priority_score = scores["ai_priority_score"]
     await db.commit()
     await db.refresh(task)
+    await notify_task_updated(user, task)
     return task
 
 
 @router.delete("/{task_id}", status_code=204)
 async def delete_task(task_id: uuid.UUID, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)):
     task = await owned_task(task_id, user, db)
+    title = task.title
     await db.delete(task)
     await db.commit()
+    await notify_task_deleted(user, title)
 
 
 @router.post("/{task_id}/start", response_model=TaskOut)
@@ -79,6 +91,7 @@ async def start_task(task_id: uuid.UUID, pomodoro: bool = Query(False), db: Asyn
     db.add(FocusSession(user_id=user.id, task_id=task.id, pomodoro=pomodoro))
     await db.commit()
     await db.refresh(task)
+    await notify_task_started(user, task)
     return task
 
 
@@ -95,6 +108,7 @@ async def stop_task(task_id: uuid.UUID, db: AsyncSession = Depends(get_db), user
     task.ai_priority_score = scores["ai_priority_score"]
     await db.commit()
     await db.refresh(task)
+    await notify_task_stopped(user, task)
     return task
 
 
@@ -109,4 +123,5 @@ async def complete_task(task_id: uuid.UUID, db: AsyncSession = Depends(get_db), 
     task.ai_priority_score = scores["ai_priority_score"]
     await db.commit()
     await db.refresh(task)
+    await notify_task_completed(user, task)
     return task

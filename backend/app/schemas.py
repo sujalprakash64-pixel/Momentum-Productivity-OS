@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from app.models import Priority, TaskStatus
@@ -18,8 +19,8 @@ class UserCreate(BaseModel):
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
-    email: EmailStr
+    id: uuid.UUID
+    email: str
     name: str
     whatsapp_number: str | None = None
     timezone: str
@@ -28,6 +29,26 @@ class UserOut(BaseModel):
 class LoginIn(BaseModel):
     email: EmailStr
     password: str
+
+
+class WhatsAppOtpRequest(BaseModel):
+    whatsapp_number: str = Field(min_length=8, max_length=40)
+    name: str | None = Field(default=None, max_length=120)
+
+
+class WhatsAppOtpRequestOut(BaseModel):
+    message: str
+    dev_otp: str | None = None
+
+
+class WhatsAppOtpVerify(BaseModel):
+    whatsapp_number: str = Field(min_length=8, max_length=40)
+    otp: str = Field(min_length=4, max_length=8)
+    name: str | None = Field(default=None, max_length=120)
+
+
+class WhatsAppTokenOut(TokenOut):
+    user: UserOut
 
 
 class TaskBase(BaseModel):
@@ -66,7 +87,7 @@ class TaskUpdate(BaseModel):
 class TaskOut(TaskBase):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
+    id: uuid.UUID
     status: TaskStatus
     productivity_score: float
     deep_work_score: float
@@ -89,8 +110,8 @@ class IdeaCreate(BaseModel):
 class IdeaOut(IdeaCreate):
     model_config = ConfigDict(from_attributes=True)
 
-    id: str
-    converted_task_id: str | None = None
+    id: uuid.UUID
+    converted_task_id: uuid.UUID | None = None
     created_at: datetime
 
 

@@ -21,6 +21,10 @@ class TaskStatus(str, enum.Enum):
     archived = "archived"
 
 
+class OtpPurpose(str, enum.Enum):
+    login = "login"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -34,6 +38,19 @@ class User(Base):
 
     tasks: Mapped[list["Task"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     ideas: Mapped[list["Idea"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+
+
+class WhatsAppOtp(Base):
+    __tablename__ = "whatsapp_otps"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    whatsapp_number: Mapped[str] = mapped_column(String(40), index=True)
+    otp_hash: Mapped[str] = mapped_column(String(255))
+    purpose: Mapped[OtpPurpose] = mapped_column(Enum(OtpPurpose), default=OtpPurpose.login)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class Task(Base):

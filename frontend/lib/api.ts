@@ -1,5 +1,5 @@
 import { mockIdeas, mockTasks } from "./mock-data";
-import { Idea, Task } from "./types";
+import { Idea, Task, User } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 
@@ -33,4 +33,46 @@ export async function loadIdeas(): Promise<Idea[]> {
   } catch {
     return mockIdeas;
   }
+}
+
+export async function requestWhatsAppOtp(whatsappNumber: string, name?: string): Promise<{ message: string; dev_otp?: string | null }> {
+  return apiFetch("/auth/whatsapp/request-otp", {
+    method: "POST",
+    body: JSON.stringify({ whatsapp_number: whatsappNumber, name })
+  });
+}
+
+export async function verifyWhatsAppOtp(
+  whatsappNumber: string,
+  otp: string,
+  name?: string
+): Promise<{ access_token: string; token_type: string; user: User }> {
+  return apiFetch("/auth/whatsapp/verify", {
+    method: "POST",
+    body: JSON.stringify({ whatsapp_number: whatsappNumber, otp, name })
+  });
+}
+
+export async function loadCurrentUser(): Promise<User> {
+  return apiFetch<User>("/auth/me");
+}
+
+export async function createTask(payload: Partial<Task> & { title: string }): Promise<Task> {
+  return apiFetch<Task>("/tasks", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export async function completeTaskRequest(id: string): Promise<Task> {
+  return apiFetch<Task>(`/tasks/${id}/done`, { method: "POST" });
+}
+
+export async function deleteTaskRequest(id: string): Promise<void> {
+  await fetch(`${API_URL}/tasks/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("momentum_token") ?? ""}`
+    }
+  });
 }
