@@ -2,8 +2,6 @@
 
 Full-stack AI-powered productivity web app with a Next.js dashboard, FastAPI backend, PostgreSQL, Redis, Celery scheduler, WebSockets, OpenAI integration points, and WhatsApp Cloud API or Twilio webhook handling.
 
-The original `index.html` is preserved as a static prototype. The production-oriented scaffold lives in `frontend/` and `backend/`.
-
 ## Architecture
 
 - `frontend/`: Next.js, React, TailwindCSS, ShadCN-style local primitives, FullCalendar, Recharts, responsive dark dashboard.
